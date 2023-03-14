@@ -9,8 +9,9 @@ const token = process.env.TOKEN
 const url = process.env.URL
 const org='nrxen';
 const bucket='nimmos'
+//setting up influxdb client
 let client=new InfluxDB({url,token});
-
+//setting up mqtt client
 const clients=mqtt.connect(process.env.MQ_URL,{
     username: process.env.USER,
     password: process.env.PASS,
@@ -18,17 +19,17 @@ const clients=mqtt.connect(process.env.MQ_URL,{
 })
 clients.on("connect", async () => {
      console.log("connected");
-    await clients.publish("nimmos", JSON.stringify({name:"nimmos",value:"route-engine"}));  
+    await clients.publish("nimmos", JSON.stringify({name:"nimmos",value:"route-engine"}));  //publishing data to mqtt
 });
 
- clients.subscribe("nimmos");
+ clients.subscribe("nimmos");//subscribing to mqtt
 
  clients.on("message", (topic, message) => {
     console.log("message received", topic, message.toString());
     const data=JSON.parse(message.toString());
-    console.log(data);
+    console.log(data);//printing the data
     
-    const writeClient = client.getWriteApi(org, bucket,'ns');
+    const writeClient = client.getWriteApi(org, bucket,'ns'); //setting up write client
     //creating point
     let point=new Point('names').tag(Object.keys(data)[0],Object.values(data)[0])
     .tag(Object.keys(data)[1],Object.values(data)[1])
